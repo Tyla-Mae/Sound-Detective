@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sound Detectives – Grade 1 English</title>
+<style>
+:root{--navy:#17324d;--teal:#087e8b;--gold:#f4b942;--cream:#fffaf0;--green:#2d8a57;--red:#b94747}
+*{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif;background:var(--cream);color:var(--navy)}
+header{background:var(--navy);color:white;padding:18px;text-align:center}
+h1{margin:0;font-size:clamp(1.5rem,4vw,2.3rem)} header p{margin:8px 0 0}
+main{max-width:900px;margin:auto;padding:18px}
+.panel{background:white;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 3px 12px #17324d18}
+button{border:0;border-radius:12px;padding:13px 17px;font-size:1rem;font-weight:bold;background:var(--teal);color:white;margin:5px;cursor:pointer}
+button.secondary{background:#e7eff3;color:var(--navy)} button:focus{outline:4px solid var(--gold)}
+.row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.choice{background:#f0f6f7;color:var(--navy);border:3px solid #cbdde2;min-width:120px;min-height:95px;font-size:1.15rem}
+.choice.selected{border-color:var(--gold);background:#fff4d6}
+.choice.correct{border-color:var(--green);background:#e4f5e9}
+.choice.wrong{border-color:var(--red);background:#fdeaea}
+.big{font-size:3.5rem;line-height:1.2;text-align:center}
+.prompt{text-align:center;font-size:1.25rem;font-weight:bold}
+#feedback{min-height:34px;text-align:center;font-weight:bold;font-size:1.1rem}
+#score{text-align:center;font-weight:bold}
+footer{text-align:center;font-size:.9rem;padding:12px;color:#4b6070}
+@media(min-width:650px){main{padding:26px}.panel{padding:24px}}
+</style>
+</head>
+<body>
+<header>
+<h1>🔎 Sound Detectives</h1>
+<p>Grade 1 English • Explore the beginning sounds s, a, t and p</p>
+</header>
+<main>
+<section class="panel">
+<h2>Mission</h2>
+<p>Look at the picture clue. Say the word aloud. Then choose the letter that makes the first sound.</p>
+<p><strong>Remember:</strong> Listen to the first sound you hear, not the name of the picture.</p>
+<div class="row">
+<button onclick="startGame()">Start / Restart</button>
+<button class="secondary" onclick="readInstructions()">Read instructions aloud</button>
+</div>
+</section>
+<section class="panel" aria-live="polite">
+<div id="round" class="prompt">Press Start to begin!</div>
+<div id="picture" class="big">🕵️</div>
+<div id="word" class="prompt">Your mission is waiting.</div>
+<div id="choices" class="row"></div>
+<div id="feedback"></div>
+<div id="score">Score: 0 / 0</div>
+<div class="row"><button id="next" onclick="nextQuestion()" disabled>Next clue</button></div>
+</section>
+<section class="panel">
+<h2>Team talk</h2>
+<p>After each clue, tell your group: “I chose ___ because ___ begins with the /___/ sound.” Take turns being the picture pointer, sound speaker and letter chooser.</p>
+<p><strong>Creator challenge:</strong> Choose another classroom object that begins with s, a, t or p. Draw it on paper and write its first letter. Explain your choice to your group.</p>
+</section>
+</main>
+<footer>This activity is self-contained and works offline once saved on the tablet.</footer>
+<script>
+const questions=[
+ {emoji:"☀️",word:"sun",answer:"s",opts:["s","a","t","p"]},
+ {emoji:"🍎",word:"apple",answer:"a",opts:["t","a","p","s"]},
+ {emoji:"🐢",word:"turtle",answer:"t",opts:["p","s","t","a"]},
+ {emoji:"🐷",word:"pig",answer:"p",opts:["a","t","s","p"]},
+ {emoji:"⭐",word:"star",answer:"s",opts:["s","p","a","t"]},
+ {emoji:"🐜",word:"ant",answer:"a",opts:["t","a","s","p"]},
+ {emoji:"🚕",word:"taxi",answer:"t",opts:["a","p","t","s"]},
+ {emoji:"✏️",word:"pencil",answer:"p",opts:["p","s","t","a"]}
+];
+let order=[],index=0,score=0,answered=false;
+function startGame(){order=[...questions.keys()].sort(()=>Math.random()-.5);index=0;score=0;showQuestion()}
+function showQuestion(){
+ answered=false;let q=questions[order[index]];
+ document.getElementById("round").textContent=`Clue ${index+1} of ${order.length}`;
+ document.getElementById("picture").textContent=q.emoji;
+ document.getElementById("word").textContent="What is the first sound in this word?";
+ document.getElementById("choices").innerHTML="";
+ q.opts.forEach(letter=>{let b=document.createElement("button");b.className="choice";b.textContent=letter;b.setAttribute("aria-label","letter "+letter);b.onclick=()=>choose(letter,b);document.getElementById("choices").appendChild(b)});
+ document.getElementById("feedback").textContent="";
+ document.getElementById("score").textContent=`Score: ${score} / ${index}`;
+ document.getElementById("next").disabled=true;
+}
+function choose(letter,button){
+ if(answered)return;answered=true;let q=questions[order[index]];
+ if(letter===q.answer){score++;button.classList.add("correct");document.getElementById("feedback").textContent=`Correct! ${q.word} begins with the /${q.answer}/ sound.`}
+ else{button.classList.add("wrong");document.getElementById("feedback").textContent=`Good try. The word is ${q.word}. It begins with /${q.answer}/.`;[...document.querySelectorAll(".choice")].forEach(b=>{if(b.textContent===q.answer)b.classList.add("correct")})}
+ document.getElementById("score").textContent=`Score: ${score} / ${index+1}`;
+ document.getElementById("next").disabled=false;
+}
+function nextQuestion(){if(!answered)return;index++;if(index>=order.length){document.getElementById("round").textContent="Mission complete!";document.getElementById("picture").textContent="🏆";document.getElementById("word").textContent=`You scored ${score} out of ${order.length}.`;document.getElementById("choices").innerHTML="";document.getElementById("feedback").textContent="Now complete the Creator Challenge with your group.";document.getElementById("next").disabled=true;return}showQuestion()}
+function readInstructions(){let text="Welcome, Sound Detectives. Look at the picture. Say its name. Listen for the first sound. Choose the letter that makes that sound. Take turns and explain your answer.";if("speechSynthesis"in window){let u=new SpeechSynthesisUtterance(text);u.lang="en-ZA";speechSynthesis.speak(u)}else{alert(text)}}
+</script>
+</body>
+</html>
